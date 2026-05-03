@@ -209,22 +209,35 @@ exports.getHotPosts = async (req, res) => {
 exports.getArchive = async (req, res) => {
   const year = req.query.year;
   const month = req.query.month;
+  const full = req.query.full;
   let posts = [];
   if (year && month) {
     const [rows] = await pool.execute(
-      "SELECT * FROM posts WHERE YEAR(created_at) = ? AND MONTH(created_at) = ? AND status = 'published' ORDER BY created_at DESC",
+      "SELECT id, title, slug, view_count, created_at FROM posts WHERE YEAR(created_at) = ? AND MONTH(created_at) = ? AND status = 'published' ORDER BY created_at DESC",
       [year, month]
     );
     posts = rows;
   } else if (year) {
     const [rows] = await pool.execute(
-      "SELECT * FROM posts WHERE YEAR(created_at) = ? AND status = 'published' ORDER BY created_at DESC",
+      "SELECT id, title, slug, view_count, created_at FROM posts WHERE YEAR(created_at) = ? AND status = 'published' ORDER BY created_at DESC",
       [year]
     );
     posts = rows;
   }
   const archiveData = await Post.getArchive();
-  res.json({ archive: archiveData, posts, year, month });
+
+  let groups = [];
+  if (full) {
+    for (const item of archiveData) {
+      const [rows] = await pool.execute(
+        "SELECT id, title, slug, view_count, created_at FROM posts WHERE YEAR(created_at) = ? AND MONTH(created_at) = ? AND status = 'published' ORDER BY created_at DESC",
+        [item.year, item.month]
+      );
+      groups.push({ year: item.year, month: item.month, count: item.count, posts: rows });
+    }
+  }
+
+  res.json({ archive: archiveData, posts, groups, year, month });
 };
 
 exports.getTags = async (req, res) => {

@@ -113,12 +113,12 @@ async function submitComment() {
     content.value = ''
     emit('refresh')
   } catch (e) {
-    $toast.error(e.response?.data?.error || '评论失败')
+    window.$toast.error(e.response?.data?.error || '评论失败')
   }
 }
 
 async function submitGuestComment() {
-  if (!guestName.value.trim()) return $toast.warning('请填写昵称')
+  if (!guestName.value.trim()) return window.$toast.warning('请填写昵称')
   try {
     await postAPI.createComment({
       postId: props.postId,
@@ -131,7 +131,7 @@ async function submitGuestComment() {
     guestEmail.value = ''
     emit('refresh')
   } catch (e) {
-    $toast.error(e.response?.data?.error || '评论失败')
+    window.$toast.error(e.response?.data?.error || '评论失败')
   }
 }
 
@@ -149,7 +149,7 @@ async function submitReply(parentId) {
     replyingTo.value = null
     emit('refresh')
   } catch (e) {
-    $toast.error(e.response?.data?.error || '回复失败')
+    window.$toast.error(e.response?.data?.error || '回复失败')
   }
 }
 

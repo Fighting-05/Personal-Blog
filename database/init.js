@@ -460,6 +460,14 @@ function mergeConfig(userConfig: Partial<Config>): Config {
       return `本文围绕"${title}"展开讨论，分享个人经验与思考，希望对你有所帮助。`;
     }
 
+    // 随机生成过去 2 年内的日期
+    function randomDate() {
+      const now = Date.now()
+      const twoYearsAgo = now - 2 * 365 * 24 * 60 * 60 * 1000
+      const randomTime = twoYearsAgo + Math.random() * (now - twoYearsAgo)
+      return new Date(randomTime).toISOString().slice(0, 19).replace('T', ' ')
+    }
+
     // ============ 生成文章 ============
     const allPosts = [];
     for (const group of categoryTitleMap) {
@@ -473,6 +481,7 @@ function mergeConfig(userConfig: Partial<Config>): Config {
           categoryId: group.catId,
           viewCount: randInt(30, 800),
           tagIds: group.tagIds.length > 0 ? pickRandom(group.tagIds, 1, 4) : [],
+          createdAt: randomDate(),
         });
       }
     }
@@ -481,8 +490,8 @@ function mergeConfig(userConfig: Partial<Config>): Config {
     const postIds = [];
     for (const p of allPosts) {
       const [res] = await pool.execute(
-        'INSERT INTO posts (title, slug, content, summary, author_id, category_id, cover_image, view_count, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [p.title, p.slug, p.content, p.summary, p.authorId, p.categoryId, '', p.viewCount, 'published']
+        'INSERT INTO posts (title, slug, content, summary, author_id, category_id, cover_image, view_count, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [p.title, p.slug, p.content, p.summary, p.authorId, p.categoryId, '', p.viewCount, 'published', p.createdAt]
       );
       postIds.push(res.insertId);
       for (const tagId of p.tagIds) {

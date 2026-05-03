@@ -9,7 +9,6 @@
         <li><router-link to="/" exact-active-class="active">首页</router-link></li>
         <li><router-link to="/archive" active-class="active">归档</router-link></li>
         <li><router-link to="/categories" active-class="active">分类</router-link></li>
-        <li><router-link to="/tags" active-class="active">标签</router-link></li>
         <li><router-link to="/about" active-class="active">关于</router-link></li>
       </ul>
 

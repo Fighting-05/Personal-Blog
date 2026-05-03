@@ -1,6 +1,6 @@
 <template>
-  <div class="post-card-3d" ref="cardRef" @mousemove="onMouseMove" @mouseleave="onMouseLeave">
-    <div class="post-card-inner" ref="innerRef">
+  <div class="post-card-3d">
+    <div class="post-card-inner">
       <img v-if="post.cover_image" :src="post.cover_image" class="post-card-cover" alt="">
       <div class="post-card-meta">
         <span class="post-card-tag" v-if="post.category_name">{{ post.category_name }}</span>
@@ -26,25 +26,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 defineProps({ post: Object, index: Number })
-const cardRef = ref(null), innerRef = ref(null)
-function onMouseMove(e) {
-  const card = cardRef.value, inner = innerRef.value
-  if (!card || !inner) return
-  const rect = card.getBoundingClientRect()
-  const x = (e.clientX - rect.left) / rect.width - 0.5
-  const y = (e.clientY - rect.top) / rect.height - 0.5
-  inner.style.transform = `rotateY(${x * 12}deg) rotateX(${-y * 8}deg) translateZ(15px)`
-}
-function onMouseLeave() {
-  if (innerRef.value) innerRef.value.style.transform = 'rotateY(0deg) rotateX(0deg) translateZ(0)'
-}
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : '' }
 </script>
 
 <style scoped>
-.post-card-3d { perspective: 1000px; margin-bottom: 20px }
+.post-card-3d { margin-bottom: 20px }
 .post-card-inner {
   background: rgba(255,255,255,0.8);
   backdrop-filter: blur(20px) saturate(180%);
@@ -52,8 +39,7 @@ function formatDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : ''
   border-radius: var(--radius-lg);
   padding: 28px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.03);
-  transition: box-shadow 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.3s, transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
-  transform-style: preserve-3d;
+  transition: box-shadow 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.3s;
   position: relative;
   overflow: hidden;
 }

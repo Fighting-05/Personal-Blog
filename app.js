@@ -61,7 +61,9 @@ async function start() {
   app.use('/api/auth/login', authLimiter);
   app.use('/api/auth/register', authLimiter);
   app.use('/api/posts/comments', apiLimiter);
-  app.use('/api/', apiLimiter);
+  app.use('/api/posts/like', apiLimiter);
+  app.use('/api/subscribe', apiLimiter);
+  app.use('/api/tools', apiLimiter);
 
   app.use('/api/auth', require('./routes/auth'));
   app.use('/api/posts', require('./routes/posts'));

@@ -13,10 +13,9 @@ let animationId
 onMounted(() => {
   if (!canvasRef.value) return
 
-  // 获取父容器尺寸
-  const parent = canvasRef.value.parentElement
-  const width = parent.offsetWidth
-  const height = parent.offsetHeight
+  const canvas = canvasRef.value
+  const width = window.innerWidth
+  const height = window.innerHeight
 
   // 初始化场景
   scene = new THREE.Scene()
@@ -69,8 +68,8 @@ onMounted(() => {
 
   // 窗口大小响应
   const handleResize = () => {
-    const w = parent.offsetWidth
-    const h = parent.offsetHeight
+    const w = window.innerWidth
+    const h = window.innerHeight
     camera.aspect = w / h
     camera.updateProjectionMatrix()
     renderer.setSize(w, h)
@@ -85,11 +84,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .particle-canvas {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: 0;
 }

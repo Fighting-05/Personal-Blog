@@ -52,6 +52,11 @@
         <div class="side-tags">
           <router-link v-for="c in categories" :key="c.id" :to="{ path: '/', query: { category: c.slug } }" class="side-tag">{{ c.name }} <em>{{ c.post_count }}</em></router-link>
         </div>
+        <div class="side-divider"></div>
+        <h4><i class="bi bi-tags"></i> 标签</h4>
+        <div class="side-tags">
+          <router-link v-for="t in tags" :key="t.id" :to="{ path: '/', query: { tag: t.slug } }" class="side-tag side-tag--small">{{ t.name }} <em>{{ t.post_count }}</em></router-link>
+        </div>
       </div>
       <div class="side-card">
         <h4><i class="bi bi-envelope"></i> 订阅</h4>
@@ -77,7 +82,7 @@ import gsap from 'gsap'
 
 const route = useRoute()
 const posts = ref([]), loading = ref(false), currentPage = ref(1), totalPages = ref(0)
-const stats = ref({}), featured = ref([]), hotPosts = ref([]), categories = ref([])
+const stats = ref({}), featured = ref([]), hotPosts = ref([]), categories = ref([]), tags = ref([])
 const subEmail = ref(''), subLoading = ref(false), subMsg = ref('')
 const heroRef = ref(null), heroSectionRef = ref(null), typedRef = ref(null)
 const searchQuery = computed(() => route.query.search || '')
@@ -106,7 +111,7 @@ function setupScrollReveal() {
 
 async function fetchPosts(p = 1) {
   loading.value = true
-  try { const param = { page: p, limit: 8 }; if (searchQuery.value) param.search = searchQuery.value; if (currentCategory.value) param.category = currentCategory.value; if (currentTag.value) param.tag = currentTag.value; const res = await postAPI.getPosts(param); posts.value = res.data.posts; currentPage.value = res.data.page; totalPages.value = res.data.totalPages; await nextTick(); setupScrollReveal() } catch (e) {}
+  try { const param = { page: p, limit: 8 }; if (searchQuery.value) param.search = searchQuery.value; if (currentCategory.value) param.category = currentCategory.value; if (currentTag.value) param.tag = currentTag.value; const res = await postAPI.getPosts(param); posts.value = res.data.posts; currentPage.value = res.data.page; totalPages.value = res.data.totalPages; await nextTick(); setupScrollReveal() } catch (e) { console.error('Home fetchPosts error:', e) }
   finally { loading.value = false }
 }
 
@@ -117,8 +122,9 @@ async function fetchAll() {
     featured.value = (fr.data.posts || []).slice(0, 3).map((p, i) => ({ ...p, rank: i + 1 }))
     hotPosts.value = hr.data || []
     categories.value = cr.data || []
+    tags.value = tr.data || []
     await nextTick(); setupScrollReveal()
-  } catch (e) {}
+  } catch (e) { console.error('Home fetchAll error:', e) }
 }
 function goPage(p) { currentPage.value = p; fetchPosts(p) }
 function scrollToPosts() { document.getElementById('posts')?.scrollIntoView({ behavior: 'smooth' }) }
@@ -188,7 +194,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(165deg, #1a1510 0%, #2a2018 30%, #1c1812 60%, #151210 100%);
+  background: transparent;
 }
 
 .hero-layer {
@@ -413,6 +419,9 @@ onMounted(() => {
 .side-tag { text-decoration: none; font-size: 0.76rem; padding: 4px 10px; border-radius: 14px; background: rgba(250,247,242,0.8); color: var(--color-text-secondary); transition: all 0.2s }
 .side-tag:hover { background: var(--color-accent-light); color: var(--color-primary) }
 .side-tag em { font-style: normal; opacity: 0.5; margin-left: 3px; font-size: 0.7rem }
+.side-tag--small { font-size: 0.72rem; padding: 3px 8px; border-radius: 10px }
+.side-divider { height: 1px; background: var(--color-border-light); margin: 16px 0 14px }
+.side-card h4 + .side-divider + h4 { margin-top: 0; font-size: 0.78rem }
 .side-sub { display: flex; gap: 6px }
 .side-sub input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--color-border); border-radius: 8px; font-size: 0.8rem; font-family: var(--font-sans); outline: none; background: rgba(255,255,255,0.6); transition: border-color 0.2s }
 .side-sub input:focus { border-color: var(--color-accent) }

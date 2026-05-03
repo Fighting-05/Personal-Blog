@@ -62,7 +62,7 @@ async function delUser(id) {
   try {
     await adminAPI.deleteUser(id)
     fetchUsers(page.value)
-  } catch (e) { $toast.error(e.response?.data?.error || '删除失败') }
+  } catch (e) { window.$toast.error(e.response?.data?.error || '删除失败') }
 }
 
 onMounted(() => fetchUsers())

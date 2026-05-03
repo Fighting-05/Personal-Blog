@@ -1,23 +1,229 @@
 <template>
-<div>
-  <div class="page-hero" style="background:linear-gradient(135deg,#f5f0e8 0%,#e8e0d5 50%,#f0e6d8 100%)">
-    <div class="section-label">Timeline</div>
-    <h2 style="font-size:1.8rem;font-weight:700;margin:0">文章归档</h2>
-    <p style="color:var(--color-text-muted);font-size:0.88rem;margin:8px 0 0">按时间浏览所有文章</p>
-  </div>
-  <div class="timeline" v-if="archive.length">
-    <div v-for="group in archive" :key="group.key" class="tl-group" data-aos="fade-up">
-      <div class="tl-year">{{group.year}} 年 {{group.month}} 月</div>
-      <div class="tl-items">
-        <router-link v-for="p in group.posts" :key="p.id" :to="'/post/'+p.slug" class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-content"><span class="tl-date">{{formatDay(p.created_at)}}</span><h4>{{p.title}}</h4><div class="tl-meta"><span><i class="bi bi-eye"></i>{{p.view_count}}</span></div></div>
+<div class="archive-root">
+  <section class="archive-hero">
+    <div class="archive-badge">Archive</div>
+    <h1>文章归档</h1>
+    <p v-if="totalPosts">共 {{ totalPosts }} 篇文章，按时间线浏览</p>
+  </section>
+
+  <div class="archive-list" v-if="groups.length">
+    <div v-for="group in groups" :key="`${group.year}-${group.month}`" class="archive-group" data-aos="fade-up">
+      <div class="archive-month-header">
+        <span class="archive-year-dot"></span>
+        <span class="archive-month-label">{{ group.year }} 年 {{ group.month }} 月</span>
+        <span class="archive-month-count">{{ group.count }} 篇</span>
+      </div>
+      <div class="archive-items">
+        <router-link
+          v-for="p in group.posts"
+          :key="p.id"
+          :to="'/post/' + p.slug"
+          class="archive-item"
+        >
+          <time class="archive-day">{{ formatDay(p.created_at) }}</time>
+          <span class="archive-line"></span>
+          <div class="archive-item-body">
+            <h3>{{ p.title }}</h3>
+            <span class="archive-meta">
+              <i class="bi bi-eye"></i> {{ p.view_count || 0 }} 阅读
+            </span>
+          </div>
         </router-link>
       </div>
     </div>
   </div>
-  <div v-else class="empty-state" style="padding:80px 0"><div class="empty-state-icon"><i class="bi bi-inbox"></i></div><p>暂无文章</p></div>
+
+  <div v-else-if="loading" class="loading-spinner">
+    <div class="spinner-ring"></div>
+  </div>
+
+  <div v-else class="empty-state" style="padding:80px 0">
+    <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+    <p>暂无归档文章</p>
+  </div>
 </div>
 </template>
-<script setup>import {ref,onMounted} from 'vue';import {postAPI} from '@/api';const archive=ref([]);onMounted(async()=>{try{const res=await postAPI.getArchive({});const arch=res.data.archive||[];for(const item of arch){const d=await postAPI.getArchive({year:item.year,month:item.month});const ps=d.data.posts||[];if(ps.length)archive.value.push({key:`${item.year}-${item.month}`,year:item.year,month:item.month,posts:ps})}}catch(_){}});function formatDay(d){return d?new Date(d).getDate()+'日':''}</script>
-<style scoped>.timeline{max-width:680px;margin:0 auto;padding:0 24px 80px}.tl-group{margin-bottom:40px}.tl-year{font-size:1.1rem;font-weight:700;color:var(--color-text);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--color-border);display:flex;align-items:center;gap:8px}.tl-items{position:relative;padding-left:24px}.tl-items::before{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--color-border-light)}.tl-item{position:relative;display:flex;align-items:flex-start;gap:16px;padding:10px 0;text-decoration:none;border-radius:8px;transition:background .2s}.tl-item:hover{background:#faf8f5}.tl-dot{position:absolute;left:-19px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--color-accent);border:2px solid #fff;box-shadow:0 0 0 2px var(--color-accent-light)}.tl-content{flex:1}.tl-date{font-size:.74rem;color:var(--color-text-muted);margin-bottom:2px;display:inline-block}.tl-content h4{font-size:.92rem;font-weight:600;color:var(--color-text);margin:0 0 4px;line-height:1.4}.tl-meta{font-size:.74rem;color:var(--color-text-muted)}.tl-meta i{margin-right:2px}</style>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { postAPI } from '@/api'
+
+const groups = ref([])
+const totalPosts = ref(0)
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const res = await postAPI.getArchive({ full: 1 })
+    if (res.data.groups) {
+      groups.value = res.data.groups
+      totalPosts.value = res.data.groups.reduce((s, g) => s + g.count, 0)
+    }
+  } catch (e) {
+    console.error('Archive fetch error:', e)
+  } finally {
+    loading.value = false
+  }
+})
+
+function formatDay(d) {
+  if (!d) return ''
+  const date = new Date(d)
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+</script>
+
+<style scoped>
+.archive-root {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.archive-hero {
+  text-align: center;
+  padding: 60px 0 48px;
+}
+
+.archive-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 20px;
+  background: rgba(201,169,110,0.1);
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.archive-hero h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--color-text);
+}
+
+.archive-hero p {
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Month Group */
+.archive-group {
+  margin-bottom: 36px;
+}
+
+.archive-month-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--color-border-light);
+}
+
+.archive-year-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px rgba(201,169,110,0.4);
+  flex-shrink: 0;
+}
+
+.archive-month-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.archive-month-count {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  background: rgba(0,0,0,0.04);
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* Items */
+.archive-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.archive-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.archive-item:hover {
+  background: rgba(0,0,0,0.02);
+}
+
+.archive-day {
+  flex-shrink: 0;
+  width: 56px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.archive-line {
+  flex-shrink: 0;
+  width: 2px;
+  align-self: stretch;
+  background: var(--color-border-light);
+  border-radius: 1px;
+}
+
+.archive-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.archive-item-body h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 4px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s;
+}
+
+.archive-item:hover .archive-item-body h3 {
+  color: var(--color-accent);
+}
+
+.archive-meta {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+}
+
+.archive-meta i {
+  margin-right: 3px;
+}
+
+@media (max-width: 640px) {
+  .archive-hero { padding: 40px 0 32px }
+  .archive-hero h1 { font-size: 1.5rem }
+  .archive-day { width: 44px; font-size: 0.72rem }
+  .archive-item { padding: 10px 12px; gap: 10px }
+}
+</style>

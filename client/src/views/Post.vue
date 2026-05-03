@@ -225,6 +225,7 @@ async function fetchPost() {
     setupLightbox()
     highlightSearch()
   } catch (e) {
+    console.error('Post fetchPost error:', e)
     post.value = null
   } finally {
     loading.value = false
@@ -232,13 +233,13 @@ async function fetchPost() {
 }
 
 async function toggleLike() {
-  if (!authStore.isLoggedIn) return $toast.warning('请先登录')
+  if (!authStore.isLoggedIn) return window.$toast.warning('请先登录')
   try {
     const res = await postAPI.likePost(post.value.id)
     liked.value = res.data.liked
     if (post.value) post.value.like_count = res.data.likeCount
   } catch (e) {
-    $toast.error(e.response?.data?.error || '操作失败')
+    window.$toast.error(e.response?.data?.error || '操作失败')
   }
 }
 

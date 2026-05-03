@@ -136,6 +136,6 @@ async function exportPosts(format) {
       a.href = url; a.download = 'blog-posts.json'; a.click()
       URL.revokeObjectURL(url)
     }
-  } catch (e) { $toast.error('导出失败') }
+  } catch (e) { window.$toast.error('导出失败') }
 }
 </script>

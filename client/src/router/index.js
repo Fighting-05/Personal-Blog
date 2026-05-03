@@ -18,8 +18,7 @@ const routes = [
   },
   {
     path: '/tags',
-    name: 'Tags',
-    component: () => import('@/views/TagsPage.vue')
+    redirect: '/categories'
   },
   {
     path: '/categories',
