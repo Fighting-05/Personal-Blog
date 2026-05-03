@@ -486,8 +486,12 @@ a:hover { color: var(--color-primary-light); }
 .hero-section {
   position: relative;
   text-align: center;
-  padding: 80px 24px 64px;
+  padding: 60px 24px 48px;
   overflow: hidden;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-section canvas {
@@ -798,7 +802,7 @@ a:hover { color: var(--color-primary-light); }
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
   .hero-title { font-size: 1.8rem; }
-  .hero-section { padding: 48px 20px 40px; }
+  .hero-section { padding: 48px 20px 40px; min-height: 260px; }
   .about-section { grid-template-columns: 1fr; gap: 12px; }
   .article-title { font-size: 1.6rem; }
   .article-content { font-size: 1rem; }
@@ -959,6 +963,33 @@ pre:hover .code-copy-btn,
 .code-copy-btn.copied {
   color: var(--color-success);
 }
+
+/* ---- Code Lang Label ---- */
+.code-lang-label {
+  position: absolute; top: 0; right: 44px;
+  padding: 2px 10px; font-size: 0.7rem; font-weight: 600;
+  color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06);
+  border-radius: 0 0 6px 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* ---- Code Line Numbers ---- */
+.code-line-nums {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 38px;
+  padding: 14px 0; overflow: hidden;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  text-align: right; pointer-events: none;
+}
+.code-line-nums span {
+  display: block; padding-right: 10px;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  line-height: 1.65; color: rgba(255,255,255,0.2);
+}
+
+/* ---- Page Hero Banner ---- */
+.page-hero {
+  text-align: center; padding: 56px 24px 40px; margin-bottom: 24px;
+}
+.page-hero .section-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); margin-bottom: 8px }
 
 /* ---- Editor Preview ---- */
 .editor-preview {
@@ -1147,9 +1178,10 @@ pre:hover .code-copy-btn,
 
 /* ==================== Gradient Text ==================== */
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 50%, #c9a96e 100%);
+  background: linear-gradient(135deg, #f0d5a0 0%, var(--color-accent) 35%, var(--color-primary) 70%, #c9a96e 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-size: 200% auto; animation: gradientShift 3s ease infinite;
+  background-size: 200% auto; animation: gradientShift 4s ease infinite;
+  text-shadow: none;
 }
 @keyframes gradientShift {
   0% { background-position: 0% center }
@@ -1168,3 +1200,48 @@ pre:hover .code-copy-btn,
   transform: scale(1.1);
 }
 .about-card-icon { transition: transform 0.3s ease }
+
+/* ==================== Aurora Glass Cards ==================== */
+.aurora-glass {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 2px 12px rgba(0,0,0,0.04),
+    0 8px 32px rgba(0,0,0,0.03),
+    inset 0 1px 0 0 rgba(255,255,255,0.6);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.aurora-glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  pointer-events: none;
+}
+.aurora-glass:hover {
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(201,169,110,0.12);
+  transform: translateY(-2px);
+}
+
+/* ==================== Magnetic Button ==================== */
+.btn-magnetic {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== Global Aurora Glass Background Effect ==================== */
+.home-root {
+  background: linear-gradient(180deg, #1a1510 0%, var(--color-bg) 25%);
+}
+
+body {
+  background: linear-gradient(180deg, #1a1510 0%, var(--color-bg) 2%);
+}

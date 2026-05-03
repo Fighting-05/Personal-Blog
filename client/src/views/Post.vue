@@ -125,14 +125,41 @@ function injectCopyButtons() {
   blocks.forEach(pre => {
     if (pre.querySelector('.code-copy-btn')) return
     pre.style.position = 'relative'
+
+    // Language label
+    const code = pre.querySelector('code')
+    let lang = ''
+    if (code) {
+      const cls = code.className || ''
+      const m = cls.match(/language-(\w+)/)
+      if (m) lang = m[1]
+    }
+    if (lang) {
+      const label = document.createElement('div')
+      label.className = 'code-lang-label'
+      label.textContent = lang
+      pre.appendChild(label)
+    }
+
+    // Line numbers
+    const text = code?.textContent || pre.textContent || ''
+    const lines = text.split('\n')
+    if (lines.length > 3) {
+      const nums = document.createElement('div')
+      nums.className = 'code-line-nums'
+      nums.innerHTML = lines.map((_, i) => `<span>${i + 1}</span>`).join('\n')
+      pre.insertBefore(nums, pre.firstChild)
+      pre.style.paddingLeft = '48px'
+    }
+
+    // Copy button
     const btn = document.createElement('button')
     btn.className = 'code-copy-btn'
     btn.innerHTML = '<i class="bi bi-clipboard"></i>'
     btn.title = '复制代码'
     btn.onclick = async () => {
-      const code = pre.querySelector('code')?.textContent || pre.textContent
       try {
-        await navigator.clipboard.writeText(code)
+        await navigator.clipboard.writeText(text)
         btn.innerHTML = '<i class="bi bi-check-lg"></i>'
         btn.classList.add('copied')
         setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i>'; btn.classList.remove('copied') }, 2000)
