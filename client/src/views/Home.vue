@@ -13,7 +13,7 @@
         </h1>
         <p class="hero-subtitle">分享技术笔记、生活感悟与项目实战经验</p>
         <div class="hero-actions">
-          <router-link to="/archive" class="btn-prime btn-magnetic"><i class="bi bi-compass"></i> 探索</router-link>
+          <router-link to="/categories" class="btn-prime btn-magnetic"><i class="bi bi-compass"></i> 探索</router-link>
           <a href="#posts" class="btn-ghost btn-magnetic" @click.prevent="scrollToPosts"><i class="bi bi-arrow-down"></i> 最新文章</a>
         </div>
       </div>

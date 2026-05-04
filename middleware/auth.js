@@ -36,6 +36,30 @@ function isAdmin(req, res, next) {
   res.status(403).json({ error: '需要管理员权限' });
 }
 
+function optionalAuth(req, res, next) {
+  if (req.session && req.session.userId) {
+    req.userId = req.session.userId;
+    req.userRole = req.session.userRole;
+    req.user = { id: req.session.userId, role: req.session.userRole, username: req.session.username };
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ')
+    ? authHeader.split(' ')[1]
+    : null;
+
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      req.user = decoded;
+      req.userId = decoded.id;
+      req.userRole = decoded.role;
+    }
+  }
+  next();
+}
+
 function setLocals(req, res, next) {
   res.locals.currentUser = req.session.userId ? {
     id: req.session.userId,
@@ -55,4 +79,4 @@ function redirectIfAuth(req, res, next) {
   next();
 }
 
-module.exports = { isAuthenticated, isAdmin, setLocals, redirectIfAuth };
+module.exports = { isAuthenticated, isAdmin, optionalAuth, setLocals, redirectIfAuth };

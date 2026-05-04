@@ -12,8 +12,8 @@
       <div class="footer-col">
         <h4>导航</h4>
         <router-link to="/">首页</router-link>
-        <router-link to="/archive">归档</router-link>
-        <router-link to="/tags">标签云</router-link>
+        <router-link to="/categories">分类</router-link>
+        <router-link to="/resume">简历</router-link>
         <a href="/rss.xml" target="_blank">RSS 订阅</a>
       </div>
       <div class="footer-col">
@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      &copy; 2025 个人博客 · Powered by Node.js + Vue 3
+      &copy; 2026 个人博客 · Powered by Node.js + Vue 3
     </div>
   </footer>
 </template>

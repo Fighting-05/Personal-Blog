@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const postController = require('../controllers/postController');
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, optionalAuth } = require('../middleware/auth');
 const { upload } = require('../utils/upload');
 const { validate, createPostRules, updatePostRules, createCommentRules, likeRules, idParam } = require('../middleware/validators');
 
@@ -18,7 +18,7 @@ router.delete('/:id', isAuthenticated, idParam, validate, postController.deleteP
 router.post('/:id/toggle-pin', isAuthenticated, idParam, validate, postController.togglePin);
 
 router.post('/like', isAuthenticated, likeRules, validate, postController.likePost);
-router.post('/comments', createCommentRules, validate, postController.createComment);
+router.post('/comments', optionalAuth, createCommentRules, validate, postController.createComment);
 router.delete('/comments/:id', isAuthenticated, idParam, validate, postController.deleteComment);
 router.post('/comments/:id/like', isAuthenticated, postController.likeComment);
 

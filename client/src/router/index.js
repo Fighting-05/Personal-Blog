@@ -12,18 +12,14 @@ const routes = [
     component: () => import('@/views/Post.vue')
   },
   {
-    path: '/archive',
-    name: 'Archive',
-    component: () => import('@/views/Timeline.vue')
-  },
-  {
-    path: '/tags',
-    redirect: '/categories'
-  },
-  {
     path: '/categories',
     name: 'Categories',
     component: () => import('@/views/CategoriesPage.vue')
+  },
+  {
+    path: '/resume',
+    name: 'Resume',
+    component: () => import('@/views/ResumeBuilder.vue')
   },
   {
     path: '/about',

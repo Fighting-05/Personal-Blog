@@ -1244,6 +1244,25 @@ pre:hover .code-copy-btn,
   overflow: hidden;
 }
 
+/* ==================== Print Styles (Resume) ==================== */
+@media print {
+  body * { visibility: hidden !important }
+  #resume-paper, #resume-paper * { visibility: visible !important }
+  #resume-paper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 30px 36px !important;
+    margin: 0 !important;
+  }
+  .rb-toolbar, .rb-form, .rb-preview-label { display: none !important }
+  .rb-main { display: block !important }
+  .rb-preview-sticky { position: static !important }
+}
+
 /* ==================== Global Aurora Glass Background Effect ==================== */
 .home-root {
   background: linear-gradient(180deg, #1a1510 0%, var(--color-bg) 25%);
