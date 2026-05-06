@@ -13,7 +13,6 @@
           </transition>
         </router-view>
       </main>
-      <AppFooter v-if="showFooter" />
     </template>
     <BackToTop />
     <ToastContainer />
@@ -22,15 +21,11 @@
 
 <script setup>
 import AppHeader from '@/components/AppHeader.vue'
-import AppFooter from '@/components/AppFooter.vue'
 import BackToTop from '@/components/BackToTop.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
 import { useAuthStore } from '@/stores/auth'
-import { onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted } from 'vue'
 const authStore = useAuthStore()
-const route = useRoute()
-const showFooter = computed(() => !['/login', '/register'].includes(route.path))
 onMounted(() => { authStore.checkAuth() })
 </script>
 
