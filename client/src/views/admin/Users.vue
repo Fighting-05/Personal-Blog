@@ -33,6 +33,7 @@
       </table>
     </div>
 
+    <ConfirmModal ref="cmRef" />
     <Pagination :page="page" :total-pages="totalPages" @change="goPage" />
   </div>
 </template>
@@ -41,8 +42,10 @@
 import { ref, onMounted } from 'vue'
 import { adminAPI } from '@/api'
 import Pagination from '@/components/Pagination.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const users = ref([])
+const cmRef = ref(null)
 const page = ref(1)
 const totalPages = ref(0)
 
@@ -58,7 +61,7 @@ async function fetchUsers(p = 1) {
 function goPage(p) { fetchUsers(p) }
 
 async function delUser(id) {
-  if (!confirm('确认删除该用户?')) return
+  const ok = await cmRef.value.show({ title: '确认删除', message: '删除后该用户的所有数据将被清除，确定吗？' }); if (!ok) return
   try {
     await adminAPI.deleteUser(id)
     fetchUsers(page.value)

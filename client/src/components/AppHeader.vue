@@ -1,15 +1,15 @@
 <template>
-  <nav class="glass-nav" ref="navbarRef" :class="{ scrolled: isScrolled }">
+  <nav class="glass-nav" ref="navbarRef" :class="{ scrolled: isScrolled, hidden: headerHidden }">
     <div class="nav-container">
       <router-link to="/" class="nav-brand">
         <span class="brand-dot"></span> 个人博客
       </router-link>
 
       <ul class="nav-links">
-        <li><router-link to="/" exact-active-class="active">首页</router-link></li>
+        <li><router-link to="/" exact-active-class="active">主页</router-link></li>
         <li><router-link to="/categories" active-class="active">分类</router-link></li>
         <li><router-link to="/resume" active-class="active">简历</router-link></li>
-        <li><router-link to="/about" active-class="active">关于</router-link></li>
+        <li v-if="authStore.isLoggedIn"><router-link to="/about" active-class="active">关于我</router-link></li>
       </ul>
 
       <div class="nav-actions">
@@ -48,22 +48,23 @@ const authStore = useAuthStore()
 const keyword = ref('')
 const searchFocused = ref(false)
 const isScrolled = ref(false)
-
-function search() {
-  if (keyword.value.trim()) {
-    router.push({ path: '/', query: { search: keyword.value.trim() } })
-  }
-}
-
-async function handleLogout() {
-  await authStore.logout()
-  router.push('/')
-}
+const headerHidden = ref(false)
+let lastScrollY = 0
 
 let scrollHandler
 onMounted(() => {
   isScrolled.value = window.scrollY > 20
-  scrollHandler = () => { isScrolled.value = window.scrollY > 20 }
+  lastScrollY = window.scrollY
+  scrollHandler = () => {
+    const currentY = window.scrollY
+    isScrolled.value = currentY > 20
+    if (currentY > lastScrollY && currentY > 100) {
+      headerHidden.value = true
+    } else if (currentY < lastScrollY) {
+      headerHidden.value = false
+    }
+    lastScrollY = currentY
+  }
   window.addEventListener('scroll', scrollHandler, { passive: true })
 })
 onUnmounted(() => { window.removeEventListener('scroll', scrollHandler) })
@@ -71,12 +72,13 @@ onUnmounted(() => { window.removeEventListener('scroll', scrollHandler) })
 
 <style scoped>
 .glass-nav {
-  position: sticky; top: 0; z-index: 999;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
   padding: 0 24px; height: 60px;
   display: flex; align-items: center;
   background: transparent;
-  transition: background 0.35s ease, box-shadow 0.35s ease;
+  transition: background 0.35s ease, box-shadow 0.35s ease, top 0.3s ease;
 }
+.glass-nav.hidden { top: -60px }
 .glass-nav.scrolled {
   background: rgba(255,255,255,0.88);
   backdrop-filter: blur(16px) saturate(180%);

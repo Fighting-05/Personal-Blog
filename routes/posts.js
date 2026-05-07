@@ -10,6 +10,7 @@ router.get('/hot', postController.getHotPosts);
 router.get('/archive', postController.getArchive);
 router.get('/tags', postController.getTags);
 router.get('/categories', postController.getCategories);
+router.get('/stats', postController.getStats);
 router.get('/:slug', postController.getPost);
 
 router.post('/', isAuthenticated, upload.single('coverImage'), createPostRules, validate, postController.createPost);

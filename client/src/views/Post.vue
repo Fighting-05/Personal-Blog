@@ -62,7 +62,7 @@
         </div>
 
         <div style="margin-top:48px">
-          <CommentBox :post-id="post.id" :comments="comments" :total="commentsTotal" @refresh="fetchPost" />
+          <CommentBox :post-id="post.id" :comments="comments" :total="commentsTotal" @refresh="fetchPost(true)" />
         </div>
 
         <RelatedPosts
@@ -209,8 +209,8 @@ function highlightSearch() {
   walk(container)
 }
 
-async function fetchPost() {
-  loading.value = true
+async function fetchPost(silent = false) {
+  if (!silent) loading.value = true
   try {
     const res = await postAPI.getPost(route.params.slug)
     post.value = res.data.post

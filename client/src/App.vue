@@ -31,6 +31,7 @@ onMounted(() => { authStore.checkAuth() })
 
 <style>
 #app { min-height: 100vh; }
+#app-layout > main { padding-top: 60px }
 #nprogress-bar { position: fixed; top: 0; left: 0; width: 0; height: 3px; background: linear-gradient(90deg, var(--color-accent), var(--color-primary)); z-index: 100000; transition: none; pointer-events: none }
 .page-fade-enter-active { transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) }
 .page-fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease }

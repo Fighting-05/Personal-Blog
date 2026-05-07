@@ -181,12 +181,24 @@ exports.createComment = async (req, res) => {
     return res.status(400).json({ error: '请填写昵称' });
   }
 
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || req.socket?.remoteAddress;
+  let ipLocation = '';
+  try {
+    const geo = require('geoip-lite');
+    const cleanIP = (ip || '').replace('::ffff:', '');
+    if (cleanIP && cleanIP !== '127.0.0.1' && cleanIP !== '::1') {
+      const geoData = geo.lookup(cleanIP);
+      if (geoData) ipLocation = [geoData.country, geoData.city].filter(Boolean).join(' ');
+    }
+  } catch {}
+
   const comment = await Comment.create({
     content, postId,
     userId,
     parentId: parentId || null,
     guestName: userId ? null : (guestName || null),
-    guestEmail: userId ? null : (guestEmail || null)
+    guestEmail: userId ? null : (guestEmail || null),
+    ipLocation,
   });
   res.json({ success: true, comment });
 };
@@ -243,4 +255,32 @@ exports.getArchive = async (req, res) => {
 exports.getTags = async (req, res) => {
   const tags = await Post.getTags();
   res.json(tags);
+};
+
+exports.getStats = async (req, res) => {
+  try {
+    const [catRows] = await pool.execute(
+      `SELECT c.name, c.slug, COUNT(p.id) as count
+       FROM categories c LEFT JOIN posts p ON c.id = p.category_id AND p.status = 'published'
+       GROUP BY c.id ORDER BY count DESC`
+    );
+    const [monthRows] = await pool.execute(
+      `SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count
+       FROM posts WHERE status = 'published' AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+       GROUP BY month ORDER BY month ASC`
+    );
+    const [viewRows] = await pool.execute(
+      `SELECT SUM(view_count) as totalViews, COUNT(*) as totalPosts FROM posts WHERE status = 'published'`
+    );
+    const [commentCount] = await pool.execute(`SELECT COUNT(*) as count FROM comments`);
+    res.json({
+      categories: catRows,
+      monthly: monthRows,
+      totalViews: viewRows[0]?.totalViews || 0,
+      totalPosts: viewRows[0]?.totalPosts || 0,
+      totalComments: commentCount[0]?.count || 0,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 };

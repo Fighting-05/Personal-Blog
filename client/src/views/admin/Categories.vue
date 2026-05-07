@@ -54,14 +54,17 @@
         </tbody>
       </table>
     </div>
-  </div>
+      <ConfirmModal ref="cmRef" />
+</div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { adminAPI } from '@/api'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const categories = ref([])
+const cmRef = ref(null)
 const editingId = ref(null)
 const editForm = reactive({ name: '', description: '' })
 const newCat = reactive({ name: '', description: '' })
@@ -93,7 +96,7 @@ async function saveEdit() {
 }
 
 async function delCat(id) {
-  if (!confirm('确认删除?')) return
+  const ok = await cmRef.value.show({ title: '确认删除', message: '删除分类后文章将变为未分类，确定吗？' }); if (!ok) return
   await adminAPI.deleteCategory(id)
   fetch()
 }

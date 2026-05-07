@@ -20,13 +20,14 @@
             <td style="padding:12px 16px;color:var(--color-text-secondary)">{{ c.username }}</td>
             <td style="padding:12px 16px;color:var(--color-text-muted)">{{ c.post_title?.substring(0, 15) }}</td>
             <td style="padding:12px 16px">
-              <button @click="del(c.id)" style="padding:4px 10px;border:1.5px solid #f0dada;border-radius:6px;font-size:0.78rem;background:transparent;color:#d4a0a0;cursor:pointer;transition:all 0.2s;font-family:var(--font-sans)" @mouseenter="$event.target.style.borderColor='var(--color-danger)';$event.target.style.color='var(--color-danger)'" @mouseleave="$event.target.style.borderColor='#f0dada';$event.target.style.color='#d4a0a0'"><i class="bi bi-trash"></i></button>
+              <button @click="askDelete(c.id)" style="padding:4px 10px;border:1.5px solid #f0dada;border-radius:6px;font-size:0.78rem;background:transparent;color:#d4a0a0;cursor:pointer;transition:all 0.2s;font-family:var(--font-sans)" @mouseenter="$event.target.style.borderColor='var(--color-danger)';$event.target.style.color='var(--color-danger)'" @mouseleave="$event.target.style.borderColor='#f0dada';$event.target.style.color='#d4a0a0'"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <ConfirmModal ref="cmRef" />
     <Pagination :page="page" :total-pages="totalPages" @change="goPage" />
   </div>
 </template>
@@ -35,10 +36,13 @@
 import { ref, onMounted } from 'vue'
 import { adminAPI } from '@/api'
 import Pagination from '@/components/Pagination.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const comments = ref([])
 const page = ref(1)
 const totalPages = ref(0)
+const delTarget = ref(null)
+const cmRef = ref(null)
 
 async function fetchComments(p = 1) {
   try {
@@ -50,12 +54,15 @@ async function fetchComments(p = 1) {
 }
 
 function goPage(p) { fetchComments(p) }
+function askDelete(id) { delTarget.value = id; cmRef.value.show({ title: '确认删除', message: '删除后无法恢复，确定要删除这条评论吗？' }).then(ok => { if (ok && delTarget.value) del(); else delTarget.value = null }) }
 
-async function del(id) {
-  if (!confirm('确认删除?')) return
-  await adminAPI.deleteComment(id)
+async function del() {
+  if (!delTarget.value) return
+  await adminAPI.deleteComment(delTarget.value)
+  delTarget.value = null
   fetchComments(page.value)
 }
 
 onMounted(() => fetchComments())
 </script>
+

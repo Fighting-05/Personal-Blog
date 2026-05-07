@@ -59,6 +59,7 @@
       </table>
     </div>
 
+    <ConfirmModal ref="cmRef" />
     <Pagination :page="page" :total-pages="totalPages" @change="goPage" />
   </div>
 </template>
@@ -67,8 +68,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { adminAPI, postAPI } from '@/api'
 import Pagination from '@/components/Pagination.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 
 const posts = ref([])
+const cmRef = ref(null)
 const page = ref(1)
 const totalPages = ref(0)
 const filter = ref('')
@@ -91,7 +94,7 @@ async function fetchPosts(p = 1) {
 function goPage(p) { fetchPosts(p) }
 
 async function delPost(id) {
-  if (!confirm('确认删除?')) return
+  const ok = await cmRef.value.show({ title: '确认删除', message: '删除后无法恢复，确定要删除这篇文章吗？' }); if (!ok) return
   await postAPI.deletePost(id)
   fetchPosts(page.value)
 }
@@ -108,7 +111,7 @@ function toggleAll(e) {
 }
 
 async function batchDelete() {
-  if (!confirm(`确认删除 ${selectedIds.value.length} 篇文章?`)) return
+  const ok = await cmRef.value.show({ title: '批量删除', message: `确定删除 ${selectedIds.value.length} 篇文章吗？` }); if (!ok) return
   await adminAPI.batchPosts({ ids: selectedIds.value, action: 'delete' })
   fetchPosts(page.value)
 }

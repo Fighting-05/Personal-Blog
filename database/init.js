@@ -99,6 +99,9 @@ async function initDatabase() {
       await conn.execute("ALTER TABLE comments ADD COLUMN guest_name VARCHAR(50) AFTER parent_id");
     } catch (_) {}
     try {
+      await conn.execute("ALTER TABLE comments ADD COLUMN ip_location VARCHAR(50) DEFAULT '' AFTER guest_email");
+    } catch (_) {}
+    try {
       await conn.execute("ALTER TABLE comments ADD COLUMN guest_email VARCHAR(100) AFTER guest_name");
     } catch (_) {}
 

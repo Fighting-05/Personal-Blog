@@ -17,9 +17,9 @@
       <router-link to="/admin/users" class="admin-nav-item"><i class="bi bi-people"></i> 用户管理</router-link>
 
       <div style="margin-top:auto">
-        <a href="/" target="_blank" class="admin-nav-item" style="margin-bottom:8px">
+        <router-link to="/" class="admin-nav-item" style="margin-bottom:8px">
           <i class="bi bi-eye"></i> 查看博客
-        </a>
+        </router-link>
         <a href="#" @click.prevent="logout" class="admin-nav-item" style="color:#dc6b6b">
           <i class="bi bi-box-arrow-right"></i> 退出登录
         </a>

@@ -42,6 +42,9 @@
         <div style="flex:1">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <strong style="font-size:0.88rem">{{ comment.displayName || comment.username || '匿名' }}</strong>
+            <small v-if="comment.ip_location" style="color:var(--color-text-muted);font-size:0.72rem;margin-left:auto;margin-right:6px">
+              <i class="bi bi-geo-alt"></i> {{ comment.ip_location }}
+            </small>
             <small style="color:var(--color-text-muted);font-size:0.78rem">{{ formatDate(comment.created_at) }}</small>
           </div>
           <p style="margin:0;font-size:0.9rem;line-height:1.6;color:var(--color-text-secondary)">{{ comment.content }}</p>

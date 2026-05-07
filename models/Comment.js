@@ -33,10 +33,10 @@ class Comment {
     return { comments, total };
   }
 
-  static async create({ content, postId, userId, parentId = null, guestName = null, guestEmail = null }) {
+  static async create({ content, postId, userId, parentId = null, guestName = null, guestEmail = null, ipLocation = '' }) {
     const [result] = await pool.execute(
-      'INSERT INTO comments (content, post_id, user_id, parent_id, guest_name, guest_email) VALUES (?, ?, ?, ?, ?, ?)',
-      [content, postId, userId, parentId, guestName, guestEmail]
+      'INSERT INTO comments (content, post_id, user_id, parent_id, guest_name, guest_email, ip_location) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [content, postId, userId, parentId, guestName, guestEmail, ipLocation]
     );
     const [rows] = await pool.execute(`
       SELECT c.*, u.username, u.avatar

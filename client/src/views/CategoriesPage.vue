@@ -35,20 +35,78 @@
       <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
       <p>暂无分类</p>
     </div>
+
+    <div class="cat-stats" v-if="statsData">
+      <div class="cat-stats-header">
+        <h2><i class="bi bi-bar-chart"></i> 数据看板</h2>
+        <div class="cat-stats-summary">
+          <span><i class="bi bi-file-text"></i> {{ statsData.totalPosts }} 篇文章</span>
+          <span><i class="bi bi-eye"></i> {{ statsData.totalViews }} 次阅读</span>
+          <span><i class="bi bi-chat-dots"></i> {{ statsData.totalComments }} 条评论</span>
+        </div>
+      </div>
+
+      <div class="cat-charts">
+        <div class="cat-chart-card">
+          <h3>分类分布</h3>
+          <Doughnut v-if="doughnutData" :data="doughnutData" :options="doughnutOptions" />
+        </div>
+        <div class="cat-chart-card">
+          <h3>近12月发文趋势</h3>
+          <Bar v-if="barData" :data="barData" :options="barOptions" />
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { postAPI } from '@/api'
 import TagCloud from 'TagCloud'
+import { Doughnut, Bar } from 'vue-chartjs'
+import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js'
+
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const categories = ref([])
 const tags = ref([])
 const cloudRef = ref(null)
 const loading = ref(true)
+const statsData = ref(null)
 let cloudInstance = null
+
+const colors = ['#6C3FF5', '#FF9B6B', '#E8D754', '#06b6d4', '#42b883', '#3178c6', '#e66b5b', '#f59e0b', '#8e44ad', '#2ecc71']
+
+const doughnutData = computed(() => {
+  if (!statsData.value?.categories?.length) return null
+  return {
+    labels: statsData.value.categories.map(c => c.name),
+    datasets: [{
+      data: statsData.value.categories.map(c => c.count),
+      backgroundColor: colors.slice(0, statsData.value.categories.length),
+      borderWidth: 0,
+    }],
+  }
+})
+
+const doughnutOptions = { responsive: true, plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } } }
+
+const barData = computed(() => {
+  if (!statsData.value?.monthly?.length) return null
+  return {
+    labels: statsData.value.monthly.map(m => m.month),
+    datasets: [{
+      label: '文章数',
+      data: statsData.value.monthly.map(m => m.count),
+      backgroundColor: '#6C3FF5',
+      borderRadius: 6,
+    }],
+  }
+})
+
+const barOptions = { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
 
 const catIcons = {
   tech: 'bi bi-code-slash',
@@ -65,15 +123,20 @@ onMounted(async () => {
   try {
     const [cr, tr] = await Promise.all([
       postAPI.getCategories(),
-      postAPI.getTags()
+      postAPI.getTags(),
     ])
     categories.value = cr.data || []
     tags.value = tr.data || []
   } catch (e) {
     console.error('Categories fetch error:', e)
-  } finally {
-    loading.value = false
   }
+
+  try {
+    const sr = await postAPI.getStats()
+    statsData.value = sr.data
+  } catch {}
+
+  loading.value = false
 
   await nextTick()
   if (tags.value.length && cloudRef.value) {
@@ -248,34 +311,23 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.cat-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+/* Stats Dashboard */
+.cat-stats { margin-top: 48px }
+.cat-stats-header { margin-bottom: 24px }
+.cat-stats-header h2 { font-size: 1.15rem; font-weight: 800; margin: 0 0 12px; display: flex; align-items: center; gap: 10px }
+.cat-stats-header h2 i { color: var(--color-accent) }
+.cat-stats-summary { display: flex; gap: 24px; flex-wrap: wrap }
+.cat-stats-summary span { font-size: 0.82rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px }
+.cat-stats-summary i { color: var(--color-accent) }
+.cat-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px }
+.cat-chart-card {
+  background: var(--color-surface); border: 1px solid var(--color-border-light);
+  border-radius: 14px; padding: 24px;
 }
-
-.cat-count {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--color-accent);
-  background: rgba(201,169,110,0.08);
-  padding: 3px 10px;
-  border-radius: 10px;
-}
-
-.cat-arrow {
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  transition: transform 0.3s, color 0.3s;
-}
-
-.cat-card:hover .cat-arrow {
-  transform: translateX(3px);
-  color: var(--color-accent);
-}
+.cat-chart-card h3 { font-size: 0.88rem; font-weight: 700; margin: 0 0 16px; color: var(--color-text) }
 
 @media (max-width: 680px) {
+  .cat-charts { grid-template-columns: 1fr }
   .cat-grid { grid-template-columns: 1fr }
   .tag-cloud-wrap { width: 300px; height: 300px }
   .cat-hero { padding: 40px 0 24px }
