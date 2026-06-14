@@ -103,7 +103,10 @@ const nextPost = ref(null)
 const liked = ref(false)
 const loading = ref(true)
 const contentRef = ref(null)
-const hasHeadings = ref(false)
+const hasHeadings = computed(() => {
+  if (!post.value?.content) return false
+  return /^#{2,3}\s/m.test(post.value.content)
+})
 const lightboxImages = ref([])
 const lightboxOpen = ref(false)
 const shareDone = ref(false)
@@ -172,13 +175,6 @@ function injectCopyButtons() {
   })
 }
 
-function detectHeadings() {
-  const container = document.querySelector('.article-content')
-  if (container) {
-    hasHeadings.value = container.querySelectorAll('h2, h3').length > 0
-  }
-}
-
 function setupLightbox() {
   const imgs = document.querySelectorAll('.article-content img')
   lightboxImages.value = Array.from(imgs).map(img => img.src)
@@ -221,7 +217,6 @@ async function fetchPost(silent = false) {
     liked.value = res.data.userLiked
     await nextTick()
     injectCopyButtons()
-    detectHeadings()
     setupLightbox()
     highlightSearch()
   } catch (e) {

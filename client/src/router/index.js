@@ -83,7 +83,12 @@ router.beforeEach((to, from, next) => {
     })
   }
 
-  if (to.meta.requiresAuth && !user) {
+  // 未登录用户访问首页时跳转到登录页
+  if (to.path === '/' && !user) {
+    next('/login')
+  } else if ((to.path === '/login' || to.path === '/register') && user) {
+    next('/')
+  } else if (to.meta.requiresAuth && !user) {
     next('/login')
   } else if (to.meta.requiresAdmin && user?.role !== 'admin') {
     next('/')
