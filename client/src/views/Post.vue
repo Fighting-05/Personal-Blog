@@ -1,73 +1,131 @@
 <template>
-  <div>
+  <div class="post-page">
     <ProgressBar v-if="post" />
+
+    <!-- 浮动返回按钮 -->
+    <a v-if="post" class="floating-back" @click="goBack" title="返回">
+      <i class="bi bi-arrow-left"></i>
+    </a>
 
     <div v-if="loading" class="loading-spinner">
       <div class="spinner-ring"></div>
     </div>
 
-    <div v-else-if="post" :class="hasHeadings ? 'article-layout' : ''">
+    <div v-else-if="post" class="post-layout" :class="{ 'has-toc': hasHeadings }">
       <TocNav v-if="hasHeadings" />
 
-      <article class="article-container" data-aos="fade-up">
-        <img v-if="post.cover_image" :src="post.cover_image" class="article-cover" alt="">
+      <article class="article-container">
+        <!-- 封面图 -->
+        <img
+          v-if="post.cover_image"
+          :src="post.cover_image"
+          class="article-cover"
+          alt=""
+        />
 
+        <!-- 标题区 -->
         <header class="article-header">
+          <router-link
+            v-if="post.category_name"
+            :to="{ path: '/', query: { category: post.category_slug || post.category_name } }"
+            class="article-category-badge"
+          >
+            {{ post.category_name }}
+          </router-link>
           <h1 class="article-title">{{ post.title }}</h1>
           <div class="article-meta">
-            <img :src="post.author_avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${post.author_name || 'user'}`" style="width:28px;height:28px;border-radius:50%;object-fit:cover" alt="">
-            <span>{{ post.author_name }}</span>
-            <span style="opacity:0.3">·</span>
-            <span>{{ formatDate(post.created_at) }}</span>
-            <span style="opacity:0.3">·</span>
-            <span><i class="bi bi-eye"></i> {{ post.view_count }} 阅读</span>
-            <span v-if="readingTime" style="opacity:0.3">·</span>
-            <span v-if="readingTime"><i class="bi bi-clock"></i> {{ readingTime }}</span>
-            <span v-if="post.category_name" style="opacity:0.3">·</span>
-            <span v-if="post.category_name">{{ post.category_name }}</span>
+            <img
+              :src="post.author_avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${post.author_name || 'user'}`"
+              class="article-meta-avatar"
+              alt=""
+            />
+            <span class="article-meta-item">{{ post.author_name }}</span>
+            <span class="article-meta-divider"></span>
+            <span class="article-meta-item">{{ formatDate(post.created_at) }}</span>
+            <span class="article-meta-divider"></span>
+            <span class="article-meta-item">
+              <i class="bi bi-clock"></i> {{ readingTime }}
+            </span>
+            <span class="article-meta-divider"></span>
+            <span class="article-meta-item">
+              <i class="bi bi-eye"></i> {{ post.view_count }} 阅读
+            </span>
           </div>
         </header>
 
+        <!-- 正文 -->
         <div class="article-content" ref="contentRef" v-html="renderedContent"></div>
 
-        <div class="article-tags" v-if="post.tags?.length">
-          <router-link v-for="tag in post.tags" :key="tag.id" :to="{ path: '/', query: { tag: tag.slug } }" class="tag-pill">
-            #{{ tag.name }}
+        <!-- 标签 -->
+        <div v-if="post.tags?.length" class="article-tags">
+          <span class="article-tags-label"><i class="bi bi-tags"></i></span>
+          <router-link
+            v-for="tag in post.tags"
+            :key="tag.id"
+            :to="{ path: '/', query: { tag: tag.slug } }"
+            class="tag-pill"
+          >
+            {{ tag.name }}
           </router-link>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:32px;padding-top:24px;border-top:1px solid var(--color-border-light)">
-          <button class="like-btn" :class="{ liked }" @click="toggleLike">
+        <!-- 底部操作栏 -->
+        <div class="article-actions">
+          <button class="action-btn" :class="{ active: liked }" @click="toggleLike">
             <i class="bi" :class="liked ? 'bi-heart-fill' : 'bi-heart'"></i>
-            {{ post.like_count }} 赞
+            <span>{{ post.like_count }} 赞</span>
           </button>
-          <button class="like-btn" @click="sharePost">
+          <button class="action-btn" @click="sharePost">
             <i class="bi" :class="shareDone ? 'bi-check-lg' : 'bi-share'"></i>
-            {{ shareDone ? '已复制' : '分享' }}
+            <span>{{ shareDone ? '已复制' : '分享' }}</span>
           </button>
-          <div class="post-nav-links">
-            <div class="post-nav-item prev" @mouseenter="hoverPrev = true" @mouseleave="hoverPrev = false">
-              <router-link v-if="prevPost" :to="'/post/' + prevPost.slug" class="post-nav-link">
-                <span><i class="bi bi-chevron-left"></i> 上一篇</span>
-                <span class="post-nav-title">{{ prevPost.title }}</span>
-              </router-link>
-            </div>
-            <div class="post-nav-item next" @mouseenter="hoverNext = true" @mouseleave="hoverNext = false">
-              <router-link v-if="nextPost" :to="'/post/' + nextPost.slug" class="post-nav-link">
-                <span>下一篇 <i class="bi bi-chevron-right"></i></span>
-                <span class="post-nav-title">{{ nextPost.title }}</span>
-              </router-link>
-            </div>
-          </div>
         </div>
 
-        <div style="margin-top:48px">
-          <CommentBox :post-id="post.id" :comments="comments" :total="commentsTotal" @refresh="fetchPost(true)" />
-        </div>
+        <!-- 上一篇 / 下一篇 -->
+        <nav class="post-pagination">
+          <router-link
+            v-if="prevPost"
+            :to="'/post/' + prevPost.slug"
+            class="post-pagination-link prev"
+          >
+            <span class="post-pagination-label"><i class="bi bi-arrow-left"></i> 上一篇</span>
+            <span class="post-pagination-title">{{ prevPost.title }}</span>
+          </router-link>
+          <span v-else class="post-pagination-link prev disabled">
+            <span class="post-pagination-label"><i class="bi bi-arrow-left"></i> 上一篇</span>
+            <span class="post-pagination-title">没有了</span>
+          </span>
+          <router-link
+            v-if="nextPost"
+            :to="'/post/' + nextPost.slug"
+            class="post-pagination-link next"
+          >
+            <span class="post-pagination-label">下一篇 <i class="bi bi-arrow-right"></i></span>
+            <span class="post-pagination-title">{{ nextPost.title }}</span>
+          </router-link>
+          <span v-else class="post-pagination-link next disabled">
+            <span class="post-pagination-label">下一篇 <i class="bi bi-arrow-right"></i></span>
+            <span class="post-pagination-title">没有了</span>
+          </span>
+        </nav>
 
+        <!-- 评论 -->
+        <section class="article-comments">
+          <h2 class="section-title">评论 ({{ commentsTotal }})</h2>
+          <CommentBox
+            :post-id="post.id"
+            :comments="comments"
+            :total="commentsTotal"
+            @refresh="fetchPost(true)"
+          />
+        </section>
+
+        <!-- 相关推荐 -->
         <RelatedPosts
           v-if="post.tags?.length || post.category_id"
-          :tags="post.tags" :category-id="post.category_id" :exclude-id="post.id"
+          :tags="post.tags"
+          :category-id="post.category_id"
+          :exclude-id="post.id"
         />
       </article>
 
@@ -77,6 +135,7 @@
     <div v-else class="empty-state">
       <div class="empty-state-icon"><i class="bi bi-file-earmark-x"></i></div>
       <p>文章不存在</p>
+      <router-link to="/" class="btn-ghost">返回首页</router-link>
     </div>
   </div>
 </template>
@@ -129,7 +188,6 @@ function injectCopyButtons() {
     if (pre.querySelector('.code-copy-btn')) return
     pre.style.position = 'relative'
 
-    // Language label
     const code = pre.querySelector('code')
     let lang = ''
     if (code) {
@@ -144,7 +202,6 @@ function injectCopyButtons() {
       pre.appendChild(label)
     }
 
-    // Line numbers
     const text = code?.textContent || pre.textContent || ''
     const lines = text.split('\n')
     if (lines.length > 3) {
@@ -155,7 +212,6 @@ function injectCopyButtons() {
       pre.style.paddingLeft = '48px'
     }
 
-    // Copy button
     const btn = document.createElement('button')
     btn.className = 'code-copy-btn'
     btn.innerHTML = '<i class="bi bi-clipboard"></i>'
@@ -178,7 +234,7 @@ function injectCopyButtons() {
 function setupLightbox() {
   const imgs = document.querySelectorAll('.article-content img')
   lightboxImages.value = Array.from(imgs).map(img => img.src)
-  imgs.forEach((img, i) => {
+  imgs.forEach(img => {
     img.style.cursor = 'zoom-in'
     img.addEventListener('click', () => {
       lightboxOpen.value = true
@@ -248,6 +304,14 @@ async function sharePost() {
 
 function formatDate(d) {
   return d ? new Date(d).toLocaleDateString('zh-CN') : ''
+}
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
 }
 
 watch(() => route.params.slug, fetchPost, { immediate: true })
